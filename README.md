@@ -1,3 +1,4 @@
+## Detecting Code Smells
 <div id="region-main" class="col-sm-9 col-sm-push-3 col-lg-10 col-lg-push-2">
             
 <p>The aim of this assignment is for you to gain some experience of building
