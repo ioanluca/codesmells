@@ -16,11 +16,11 @@ public class LongParamListVisitor extends VoidVisitorAdapter<Void> {
                 .size();
 
         if (params > maxLimit) {
-            Log.info("Method %s is TOO LONG! --> it has %d which is more than %d!",
+            Log.info("LONG PARAMETER LIST at %s => it has %d which is more than %d!",
                     method.getNameAsString(),
                     params,
                     maxLimit);
         }
-//        super.visit(method, arg);
+        super.visit(method, arg);
     }
 }

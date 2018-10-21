@@ -37,7 +37,7 @@ public class PrimitiveObsessionVisitor extends VoidVisitorAdapter<Void> {
 
         var ratio = (double) primitives / total;
         if (primitives >= 4 && ratio >= 0.37) {
-            Log.info("PRIMITIVE OBSESSION! in CLASS %s --> %d primitives" +
+            Log.info("PRIMITIVE OBSESSION at CLASS %s --> %d primitives" +
                             " out of %d fields => that is %.2f %% primitives"
                     , n.getNameAsString(), primitives, total, ratio * 100);
         }
@@ -65,7 +65,7 @@ public class PrimitiveObsessionVisitor extends VoidVisitorAdapter<Void> {
 
         var ratio = (double) primitives / total;
         if (primitives >= 4 && ratio >= 0.37) {
-            Log.info("PRIMITIVE OBSESSION! in METHOD %s --> %d primitives" +
+            Log.info("PRIMITIVE OBSESSION at METHOD %s --> %d primitives" +
                             " out of %d variables => that is %.2f %% primitives"
                     , n.getNameAsString(), primitives, total, ratio * 100);
         }

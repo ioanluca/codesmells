@@ -1,3 +1,5 @@
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
@@ -11,9 +13,12 @@ public class SwitchDetector extends VoidVisitorAdapter<JavaParserFacade> {
         var t = jpf.getType(sel);
         if (t.isReferenceType()) {
             var tt = t.asReferenceType();
+            Node nn = n;
+            while (nn.getParentNode().isPresent() &&
+                    !(nn instanceof MethodDeclaration)) nn = nn.getParentNode().get();
             if (tt.getTypeDeclaration().isEnum()) {
-                Log.info("Switching on an enum type %s:\n%s"
-                        , tt.getQualifiedName(), n);
+                Log.info("SWITCH ON ENUM %s at %s"
+                        , tt.getQualifiedName(), ((MethodDeclaration) nn).getNameAsString());
             }
         }
     }

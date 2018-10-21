@@ -38,7 +38,7 @@ public class MiddleManVisitor extends VoidVisitorAdapter<Void> {
                             (methodCallExpr -> {
                                 if (methodNames.contains(methodCallExpr
                                         .getName().asString())) {
-                                    Log.info("MIDDLEMAN!!! at method %s", n.getNameAsString());
+                                    Log.info("MIDDLEMAN at method %s", n.getNameAsString());
                                 }
                             });
 

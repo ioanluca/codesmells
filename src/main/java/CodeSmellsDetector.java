@@ -37,17 +37,17 @@ public class CodeSmellsDetector {
                         cu -> cu
                                 .getTypes()
                                 .forEach(tydecl -> {
-                                    var msg = String.format("In definition of %s",
+                                    var msg = String.format("\nin type %s->>",
                                             tydecl.getName().asString());
                                     Log.info(msg);
                                     Log.info(Strings.repeat("=", msg.length()));
-//                                    tydecl.accept(new LongParamListVisitor(5), null);
-//                                    tydecl.accept(new ClassTooLong(100), null);
-//                                    tydecl.accept(new MethodTooLong(10), null);
-//                                    tydecl.accept(new SwitchDetector(), javaParserFacade);
-//                                    tydecl.accept(new PrimitiveObsessionVisitor(), null);
+                                    tydecl.accept(new LongParamListVisitor(5), null);
+                                    tydecl.accept(new ClassTooLongVisitor(100), null);
+                                    tydecl.accept(new MethodTooLongVisitor(10), null);
+                                    tydecl.accept(new SwitchDetector(), javaParserFacade);
+                                    tydecl.accept(new PrimitiveObsessionVisitor(), null);
                                     tydecl.accept(new MiddleManVisitor(tydecl), null);
-//                                    System.out.println("\n");
+                                    Log.info(Strings.repeat("=", msg.length()));
                                 })
                 );
     }
