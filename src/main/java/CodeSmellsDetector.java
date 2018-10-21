@@ -1,12 +1,12 @@
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy;
 import com.github.javaparser.utils.Log;
 import com.github.javaparser.utils.ProjectRoot;
+import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,7 +18,7 @@ public class CodeSmellsDetector {
 
     private final ProjectRoot projectRoot;
     private final Set<CompilationUnit> compilationUnits;
-    private final TypeSolver typeSolver;
+    private final JavaParserFacade javaParserFacade;
 
     public CodeSmellsDetector(Path projectRootPath) {
         Log.setAdapter(new Log.StandardOutStandardErrorAdapter());
@@ -26,9 +26,9 @@ public class CodeSmellsDetector {
                 new SymbolSolverCollectionStrategy()
                         .collect(projectRootPath);
         compilationUnits = new HashSet<>();
-        typeSolver = new CombinedTypeSolver(
+        javaParserFacade = JavaParserFacade.get(new CombinedTypeSolver(
                 new ReflectionTypeSolver(),
-                new JavaParserTypeSolver(projectRootPath));
+                new JavaParserTypeSolver(projectRootPath)));
     }
 
     public void runDetectors() {
@@ -39,12 +39,13 @@ public class CodeSmellsDetector {
                                 .forEach(tydecl -> {
                                     var msg = String.format("In definition of %s",
                                             tydecl.getName().asString());
-//                                    Log.info(msg);
-//                                    Log.info(Strings.repeat("=", msg.length()));
+                                    Log.info(msg);
+                                    Log.info(Strings.repeat("=", msg.length()));
 //                                    tydecl.accept(new LongParamListVisitor(5), null);
 //                                    tydecl.accept(new ClassTooLong(100), null);
 //                                    tydecl.accept(new MethodTooLong(10), null);
-                                    tydecl.accept(new SwitchDetector(), JavaParserFacade.get(typeSolver));
+//                                    tydecl.accept(new SwitchDetector(), JavaParserFacade.get(typeSolver));
+                                    tydecl.accept(new PrimitiveObsessionVisitor(), javaParserFacade);
 //                                    System.out.println("\n");
                                 })
                 );
