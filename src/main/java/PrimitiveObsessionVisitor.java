@@ -1,12 +1,11 @@
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
-import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.utils.Log;
 
-public class PrimitiveObsessionVisitor extends VoidVisitorAdapter<JavaParserFacade> {
+public class PrimitiveObsessionVisitor extends VoidVisitorAdapter<Void> {
     @Override
-    public void visit(ClassOrInterfaceDeclaration n, JavaParserFacade arg) {
+    public void visit(ClassOrInterfaceDeclaration n, Void arg) {
         super.visit(n, arg);
         if (n.getFields().isEmpty()) {
             return;
@@ -14,50 +13,61 @@ public class PrimitiveObsessionVisitor extends VoidVisitorAdapter<JavaParserFaca
         var primitives =
                 n.getFields()
                         .stream()
-                        .filter(f -> {
-                            if (f.isStatic() && f.isFinal()) {
+                        .filter(field -> {
+                            var t = field.getElementType();
+                            if (field.isStatic() && field.isFinal()) {
                                 return false; // is a constant then its ok
                             }
-                            if (f.getElementType().isArrayType()) {
+                            if (t.isArrayType()) {
                                 return false; // usually ok
                             }
-                            return f.getElementType().isPrimitiveType();
+                            var isString = t.asString().equals("String");
+                            return t.isPrimitiveType() || isString;
                         })
-                        .count();
+                        .map(field -> field.getVariables().size())
+                        .mapToInt(Integer::intValue)
+                        .sum();
 
-        var total = n.getFields().size();
+        var total = n
+                .getFields()
+                .stream()
+                .map(field -> field.getVariables().size())
+                .mapToInt(Integer::intValue)
+                .sum();
+
         var ratio = (double) primitives / total;
-        if (primitives >= 3 && ratio >= 0.3) {
+        if (primitives >= 4 && ratio >= 0.37) {
             Log.info("PRIMITIVE OBSESSION! in CLASS %s --> %d primitives" +
                             " out of %d fields => that is %.2f %% primitives"
                     , n.getNameAsString(), primitives, total, ratio * 100);
         }
     }
 
-    public void visit(MethodDeclaration n, JavaParserFacade arg) {
+    public void visit(MethodDeclaration n, Void arg) {
         super.visit(n, arg);
-        final int[] total = {n.getParameters().size()};
+        int total = n.getParameters().size();
 
-        final long[] primitives = {n.getParameters().stream()
+        long primitives = n.getParameters().stream()
                 .filter(p -> {
                     if (p.getType().isArrayType()) return false;
-                    return p.getType().isPrimitiveType();
-                }).count()};
+                    return p.getType().isPrimitiveType() ||
+                            p.getType().asString().equals("String");
+                })
+                .count();
 
-        n.getBody().ifPresent(body ->
-        {
-            primitives[0] += CodeSmellsUtils.countPrimitiveVariables(
-                    body,
-                    arg
+        if (n.getBody().isPresent()) {
+            var body = n.getBody().get();
+            primitives += CodeSmellsUtils.countPrimitiveVariables(
+                    body
             );
-            total[0] += CodeSmellsUtils.countVariables(body);
-        });
+            total += CodeSmellsUtils.countVariables(body);
+        }
 
-        var ratio = (double) primitives[0] / total[0];
-        if (primitives[0] >= 3 && ratio >= 0.3) {
+        var ratio = (double) primitives / total;
+        if (primitives >= 4 && ratio >= 0.37) {
             Log.info("PRIMITIVE OBSESSION! in METHOD %s --> %d primitives" +
-                            " out of %d fields => that is %.2f %% primitives"
-                    , n.getNameAsString(), primitives[0], total[0], ratio * 100);
+                            " out of %d variables => that is %.2f %% primitives"
+                    , n.getNameAsString(), primitives, total, ratio * 100);
         }
     }
 }

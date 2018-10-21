@@ -44,8 +44,8 @@ public class CodeSmellsDetector {
 //                                    tydecl.accept(new LongParamListVisitor(5), null);
 //                                    tydecl.accept(new ClassTooLong(100), null);
 //                                    tydecl.accept(new MethodTooLong(10), null);
-//                                    tydecl.accept(new SwitchDetector(), JavaParserFacade.get(typeSolver));
-                                    tydecl.accept(new PrimitiveObsessionVisitor(), javaParserFacade);
+//                                    tydecl.accept(new SwitchDetector(), javaParserFacade);
+                                    tydecl.accept(new PrimitiveObsessionVisitor(), null);
 //                                    System.out.println("\n");
                                 })
                 );
