@@ -1,4 +1,5 @@
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 
 public class CodeSmellsUtils {
@@ -11,7 +12,8 @@ public class CodeSmellsUtils {
                         .map(CodeSmellsUtils::countStatements)
                         .mapToInt(Integer::intValue)
                         .sum();
-        return node instanceof Statement ?
+        return (node instanceof Statement) &&
+                !(node instanceof BlockStmt) ?
                 soFar + 1 :
                 soFar;
     }

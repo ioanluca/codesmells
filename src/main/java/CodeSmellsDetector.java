@@ -1,9 +1,12 @@
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.visitor.VoidVisitor;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy;
 import com.github.javaparser.utils.Log;
 import com.github.javaparser.utils.ProjectRoot;
-import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -15,6 +18,7 @@ public class CodeSmellsDetector {
 
     private final ProjectRoot projectRoot;
     private final Set<CompilationUnit> compilationUnits;
+    private final TypeSolver typeSolver;
 
     public CodeSmellsDetector(Path projectRootPath) {
         Log.setAdapter(new Log.StandardOutStandardErrorAdapter());
@@ -22,9 +26,12 @@ public class CodeSmellsDetector {
                 new SymbolSolverCollectionStrategy()
                         .collect(projectRootPath);
         compilationUnits = new HashSet<>();
+        typeSolver = new CombinedTypeSolver(
+                new ReflectionTypeSolver(),
+                new JavaParserTypeSolver(projectRootPath));
     }
 
-    private void runVisitor(VoidVisitor voidVisitor) {
+    public void runDetectors() {
         compilationUnits
                 .forEach(
                         cu -> cu
@@ -32,22 +39,15 @@ public class CodeSmellsDetector {
                                 .forEach(tydecl -> {
                                     var msg = String.format("In definition of %s",
                                             tydecl.getName().asString());
-                                    Log.info(msg);
-                                    Log.info(Strings.repeat("=", msg.length()));
-                                    tydecl.accept(voidVisitor, null);
-                                    System.out.println("\n");
+//                                    Log.info(msg);
+//                                    Log.info(Strings.repeat("=", msg.length()));
+//                                    tydecl.accept(new LongParamListVisitor(5), null);
+//                                    tydecl.accept(new ClassTooLong(100), null);
+//                                    tydecl.accept(new MethodTooLong(10), null);
+                                    tydecl.accept(new SwitchDetector(), JavaParserFacade.get(typeSolver));
+//                                    System.out.println("\n");
                                 })
                 );
-    }
-
-    public void longParameterList(int maxLimit) {
-        var longParamListVisitor = new LongParamListVisitor(maxLimit);
-        runVisitor(longParamListVisitor);
-    }
-
-    public void methodTooLong(int maxLimit) {
-        var tooLongVisitor = new TooLong(maxLimit);
-        runVisitor(tooLongVisitor);
     }
 
     private void parse(String startPackage) {
@@ -77,7 +77,6 @@ public class CodeSmellsDetector {
         var projectRootPath = Paths.get("/home/ioanluca/workspace/codesmells/src/main/java");
         var codeSmellDetector = new CodeSmellsDetector(projectRootPath);
         codeSmellDetector.parse("test");
-        codeSmellDetector.longParameterList(5);
-        codeSmellDetector.methodTooLong(10);
+        codeSmellDetector.runDetectors();
     }
 }
