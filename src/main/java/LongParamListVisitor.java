@@ -3,21 +3,24 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 import com.github.javaparser.utils.Log;
 
 public class LongParamListVisitor extends VoidVisitorAdapter<Void> {
-    private int maxLimitInclusive;
+    private int maxLimit;
 
-    public LongParamListVisitor(int maxLimitInclusive) {
-        this.maxLimitInclusive = maxLimitInclusive;
+    public LongParamListVisitor(int maxLimit) {
+        this.maxLimit = maxLimit;
     }
 
     @Override
-    public void visit(MethodDeclaration methodDeclaration, Void arg) {
-        if (methodDeclaration
+    public void visit(MethodDeclaration method, Void arg) {
+        var params = method
                 .getParameters()
-                .size() >= maxLimitInclusive) {
-            Log.info("Method %s has more than %d parameters!",
-                    methodDeclaration.getNameAsString(),
-                    maxLimitInclusive);
+                .size();
+
+        if (params > maxLimit) {
+            Log.info("Method %s is TOO LONG! --> it has %d which is more than %d!",
+                    method.getNameAsString(),
+                    params,
+                    maxLimit);
         }
-        super.visit(methodDeclaration, arg);
+//        super.visit(method, arg);
     }
 }

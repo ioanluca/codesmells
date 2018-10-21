@@ -1,8 +1,9 @@
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.visitor.VoidVisitor;
+import com.github.javaparser.symbolsolver.utils.SymbolSolverCollectionStrategy;
 import com.github.javaparser.utils.Log;
-import com.github.javaparser.utils.ParserCollectionStrategy;
 import com.github.javaparser.utils.ProjectRoot;
+import com.google.common.base.Strings;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -18,19 +19,35 @@ public class CodeSmellsDetector {
     public CodeSmellsDetector(Path projectRootPath) {
         Log.setAdapter(new Log.StandardOutStandardErrorAdapter());
         this.projectRoot =
-                new ParserCollectionStrategy()
+                new SymbolSolverCollectionStrategy()
                         .collect(projectRootPath);
         compilationUnits = new HashSet<>();
     }
 
     private void runVisitor(VoidVisitor voidVisitor) {
         compilationUnits
-                .forEach(cu -> cu.accept(voidVisitor, null));
+                .forEach(
+                        cu -> cu
+                                .getTypes()
+                                .forEach(tydecl -> {
+                                    var msg = String.format("In definition of %s",
+                                            tydecl.getName().asString());
+                                    Log.info(msg);
+                                    Log.info(Strings.repeat("=", msg.length()));
+                                    tydecl.accept(voidVisitor, null);
+                                    System.out.println("\n");
+                                })
+                );
     }
 
-    private void longParameterList(int maxLimit) {
+    public void longParameterList(int maxLimit) {
         var longParamListVisitor = new LongParamListVisitor(maxLimit);
         runVisitor(longParamListVisitor);
+    }
+
+    public void methodTooLong(int maxLimit) {
+        var tooLongVisitor = new TooLong(maxLimit);
+        runVisitor(tooLongVisitor);
     }
 
     private void parse(String startPackage) {
@@ -61,5 +78,6 @@ public class CodeSmellsDetector {
         var codeSmellDetector = new CodeSmellsDetector(projectRootPath);
         codeSmellDetector.parse("test");
         codeSmellDetector.longParameterList(5);
+        codeSmellDetector.methodTooLong(10);
     }
 }
