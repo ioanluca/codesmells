@@ -2,6 +2,9 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[margin=0.8in]{geometry}
+
+\usepackage{rotating, graphicx}
+\graphicspath{ {../} }
 	
 \begin{document}
 
@@ -94,8 +97,30 @@ of the method is quite complex.
 The software detects parameters lists for both methods and constructors
 with more than 5 parameters.
 
-
 \section{High-level design}
+
+\begin{sidewaysfigure}
+	\includegraphics[width=\textwidth]{codesmellspng}
+	\caption{Each code smell is implemented using a visitor that extends either
+		the generic JavaParser visitor or the the void one.
+		The CodeSmellsDetector class is responsible for loading and parsing all
+		the sources found in the test system.
+		It also runs each visitor on compilation units and
+		groups errors by classes.
+		Finally, CodeSmellsUtil provides useful functions like counting
+		nested statements.}
+\end{sidewaysfigure}
+
+Each code smell is implemented using a visitor that extends either
+the generic JavaParser visitor or the the void one.
+
+The CodeSmellsDetector class is responsible for loading and parsing all
+the sources found in the test system.
+It also runs each visitor on compilation units and
+groups errors by classes.
+Finally, CodeSmellsUtil provides useful functionality like counting
+nested statements
+
 
 
 \pagenumbering{arabic}
