@@ -14,33 +14,6 @@
 \date{\today}
 \maketitle
 
-
-% Your submission needs to include the code (zipped up) along with a short report (I'm only after a few pages) by which includes:
-
-% An overview of the chosen problem(s).
-% An outline of your solution and a high-level overview of your
-% design (a class diagram is fine - just an indication of who you have structured your solution)
-
-% Details of any important/interesting parts of your implementation.
-% Results and evaluation - what it does and how well it does it. You should run your solution over the entire test system provided and summarise the outputs in terms of: a) which smells were accurately detected, b) which were missed, and c) what false positives (incorrectly flagged up by your system as smells) were identified. It is likely that will be the majority of the report.
-
-% A statement of the score (out of 20) that you think the work deserves along with a short justification for this (a couple of sentences).
-
-
-% You
-% will also be required to demonstrate your system in week 6/7.Additional Information on the marking schemeThere
-% are three basic components to how your submission will be assessed:
-% what it does, how well it does it, and how you went about doing it.
-
-% What it does: Some tasks are more complicated than others (see the table above)
-
-% How well it does it: This ranges from brilliantly - produces the
-% correct results for all the time, to adequate - works
-% reasonably well for a limited number of cases, to... well let's not aim for that.
-
-% How you went about doing it: This considers what facilities of the JavaParser framework
-% you employed and also also the quality of your design.
-
 \section{Code Smells Overview}
 I attempted the ''Middle Man'' code smell from the Hard category,
 the ''Long Method'', ''Switch Statements'' and ''Primitive Obsession'' code smells
@@ -48,14 +21,14 @@ from the Medium category as well as
 the ''Long Class'' and 'Long Parameter List'' from the Easy category.
 
 \subsection{Middle Man}
-This code smell happens when a class delegates all of its responsibility to
-another class, usually when attempting to reduce high coupling. However, this
-way it essentially becomes useless.
+This code smell happens when a class delegates its responsibility to
+another class, usually when attempting to reduce coupling. However, by
+doing this, it essentially becomes obsolete.
 
 The software identifies such behaviour by using 2 visitors.
-The first one traverses all the methods in scope to compile a set of all the
+The first one traverses all methods in scope to compile a set of 
 method names.
-The second visitor identifies methods with a single statement or with 2
+The second visitor identifies methods with a single statement, or with 2
 statements
 out of which the outer one is a return.
 If the statement is a method call that is part of the list, then the smell was
@@ -65,36 +38,37 @@ found.
 Long methods/classes are a sign of bad incremental design.
 Functionality has been
 extended over time without taking into account refactoring.
-They are hard to read and they usually denote breaking of the
+They are hard to read and they usually break the
 ''Single responsibility principle''.
-The software detects such methods/classes by counting the statements inside its
-body, including arbitrarily nested statements.
+The software detects such methods/classes by counting statements inside 
+bodies/declarations, including arbitrarily nested statements.
 If the number exceeds 10/100, the smell was found.
 
 \subsection{Switch Statements}
 Switching on type codes is a bad practice in OOP and it should be handled by
 subclassing.
-This smell is detected when the expressions being switched on is of
+This smell is detected when the expressions being switched on are of
 a user defined Enum type.
 
 \subsection{Primitive Obsession}
 This appears when sufficiently complex data is handled by primitive types
 instead of being abstracted away in a class.
 It favours the birth of Data Clumps smells as well.
-The software detects this smell inside method declarations and classes by
-counting all the total number of variables, parameters and fields.
-Then, the primitive declarations are selected from the total and ratio
+The software detects this smell inside method and class 
+definitions by
+counting the total number of variables, parameters and fields.
+Afterwards, the primitive declarations are selected from the total and a $ratio$
 is calculated with $ratio=\frac{primitives}{total}$.
 If $ratio \geq 0.37$ and $primitive \geq 4$ then the code smell was discovered.
-The numbers came from a lot of trial and error and they seem to discover this
+The numbers came from trial and error and they appear to discover this
 code smell wherever it is present in the testing system.
 
 \subsection{Long Parameter List}
 Similar to the Primitive Obsession, having too many parameters breaks both
-encapsulation and abstraction and.
-In addition, such a code smell provides a clear clue that the implementation
-of the method is quite complex.
-The software detects parameters lists for both methods and constructors
+encapsulation and abstraction.
+In addition, it gives a clear clue that the implementation
+of a method is quite complex.
+The software detects long lists of parameters for both methods and constructors
 with more than 5 parameters.
 
 \section{High-level design}
@@ -125,29 +99,32 @@ The project was developed using Java 10 and Maven as a build tool plus git for
 version control. This report is written in \LaTeX.
 
 Newer versions of JavaParser provide convenience methods to traverse the AST
-in a functional style by using the Stream and Map-Reduce API and the source
+in a functional style by using the Stream and Map-Reduce APIs.
+The source
 code tries to use them where possible.
 
-The SwitchDetector is using SymbolParser to test whether the type switched on
+The SwitchDetector is using SymbolParser to test if the type switched on
 is an user defined Enum.
-SymbolParser is a new addition to JavaParser that implements various semantics
+SymbolParser is a new addition to JavaParser that implements various 
+semantic-driven analyses
 based on the AST.
 
 It is worth mentioning that when implementing Primitive Obsession, it is not
 enough to check whether a variable declaration is of a primitive type because
-the JavaParser provided method does not check for Strings and other boxed types.
-This is acceptable because they are in fact reference types in Java.
-This solution takes considers Strings as being primitives as well.
+the JavaParser method does not check for Strings and other boxed types.
+This is acceptable since they are in fact reference types in Java.
+The solution considers Strings to be primitives.
 
 The runner class allows to specify a root folder for the Java source files
 that need to be analysed and a starting package --- afterwards, it runs
-all the code smell detectors on each file.
+all the smell detectors on each file.
 
 The utility functions use a mix of Map-Reduce and Recursion to traverse the AST.
 
 \section{Results and Evaluation}
 
-The system seems to work reasonably well on the test system provided. I am not
+The system seems to work reasonably well on the provided test system.
+I am not
 aware of any false positives. However, there are chances that this software
 would fail in more complex cases that I haven't thought about yet.
 
@@ -155,7 +132,8 @@ Moreover, there is uncertainty regarding whether the implementations that work
 well for typical method declarations behave the same on lambdas.
 They do for anonymous functions.
 Similarly, JavaParser has no support for the new $var$ keyword that has recently
-been added to Java.
+been added to Java. Hence, type inference is not as easy when if the source
+uses $var$.
 
 \subsection{Program Output}
 Below is the output of generated by the program when run on the test system.
